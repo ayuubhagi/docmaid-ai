@@ -172,7 +172,14 @@ export default function Dashboard() {
       )}
 
       {documents.length === 0 ? (
-        <div className="card py-16 text-center">
+        <div className="card animate-fade-in py-16 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-slate-800 bg-slate-950/60 text-brand-400">
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 15V3" />
+              <path d="m7 8 5-5 5 5" />
+              <path d="M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+            </svg>
+          </div>
           <p className="text-lg text-slate-300">No documents yet</p>
           <p className="mt-2 text-sm text-slate-500">
             Upload a PDF, Word document, Markdown, or text file to get started.
@@ -192,7 +199,7 @@ export default function Dashboard() {
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {documents.map((doc) => (
-                <tr key={doc.id}>
+                <tr key={doc.id} className="transition-colors hover:bg-slate-800/30">
                   <td className="max-w-xs truncate px-5 py-3 font-medium" title={doc.filename}>
                     {doc.filename}
                     {doc.status === "failed" && doc.error_message && (
@@ -204,8 +211,13 @@ export default function Dashboard() {
                   <td className="px-5 py-3 text-slate-400">{formatBytes(doc.file_size)}</td>
                   <td className="px-5 py-3">
                     <span
-                      className={`inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_BADGES[doc.status]}`}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_BADGES[doc.status]}`}
                     >
+                      <span
+                        className={`inline-block h-1.5 w-1.5 rounded-full bg-current ${
+                          doc.status === "pending" || doc.status === "processing" ? "animate-blink" : ""
+                        }`}
+                      />
                       {doc.status}
                     </span>
                   </td>

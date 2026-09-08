@@ -144,8 +144,13 @@ export default function Chat() {
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="mx-auto max-w-3xl space-y-4">
           {messages.length === 0 && (
-            <div className="py-20 text-center text-slate-500">
-              <p className="text-lg">Ask anything about your documents.</p>
+            <div className="animate-fade-in py-20 text-center text-slate-500">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-brand-400">
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+                </svg>
+              </div>
+              <p className="text-lg text-slate-300">Ask anything about your documents.</p>
               <p className="mt-2 text-sm">
                 e.g. “Summarize the key terms” or “What does section 4 say about payments?”
               </p>
@@ -153,9 +158,9 @@ export default function Chat() {
           )}
 
           {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div key={i} className={`flex animate-fade-up ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
                   m.role === "user"
                     ? "bg-brand-500 text-slate-950"
                     : "border border-slate-800 bg-slate-900 text-slate-200"
@@ -163,7 +168,9 @@ export default function Chat() {
               >
                 <p className="whitespace-pre-wrap">
                   {m.content}
-                  {m.streaming && <span className="ml-1 animate-pulse text-brand-400">▍</span>}
+                  {m.streaming && (
+                    <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-blink bg-brand-400 align-middle" />
+                  )}
                 </p>
                 {m.role === "assistant" && m.sources && <SourceList sources={m.sources} />}
               </div>
