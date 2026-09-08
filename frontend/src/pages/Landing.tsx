@@ -20,7 +20,7 @@ const features: Feature[] = [
   },
   {
     title: "Ask in plain English",
-    body: "Retrieval-augmented generation finds the most relevant passages and Claude writes a grounded answer in real time.",
+    body: "Retrieval-augmented generation finds the most relevant passages and a language model writes a grounded answer in real time.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />

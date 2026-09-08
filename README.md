@@ -2,7 +2,7 @@
 
 **Chat with your documents.** Upload PDFs, Word docs, or notes — DocMaid indexes them with a retrieval-augmented generation (RAG) pipeline and answers your questions in real time, with every claim cited back to the exact source passage.
 
-> Full-stack AI engineering project: React · FastAPI · PostgreSQL · ChromaDB · pluggable LLM backends (demo / Groq / Anthropic Claude) · Docker · GitHub Actions
+> Full-stack AI engineering project: React · FastAPI · PostgreSQL · ChromaDB · pluggable LLM backends (demo / Groq) · Docker · GitHub Actions
 
 **[Live demo → documind-ai-hazel-theta.vercel.app](https://documind-ai-hazel-theta.vercel.app)** — free-tier hosting, so the first request after idle takes ~1 minute to wake the backend. Accounts and documents persist in managed Postgres; the vector index rebuilds automatically from stored chunks after restarts.
 
@@ -19,7 +19,7 @@ Knowledge workers and students waste hours scanning long documents for specific 
 - 🔐 **Accounts & auth** — short-lived JWT access tokens + rotating, server-side-revocable refresh tokens; bcrypt password hashing
 - 📤 **Document ingestion pipeline** — PDF/DOCX/TXT/MD → text extraction → paragraph-aware chunking → vector embedding, processed asynchronously in the background
 - 🧠 **RAG chat** — semantic retrieval over your documents, grounded prompting, and token-by-token streaming answers
-- 🔌 **Pluggable LLM backends** — `demo` (free, no API), Groq (free tier), or Anthropic Claude via one config flag
+- 🔌 **Pluggable LLM backends** — `demo` (free, no API) or Groq (free tier) via one config flag
 - 📎 **Citations** — every answer references the exact excerpts it was grounded in
 - 🗂 **Per-document or global chat** — scope a conversation to one file or search everything
 - 📊 **Analytics dashboard** — documents indexed, questions asked, and 14-day activity chart
@@ -41,8 +41,8 @@ FastAPI ────────────────────────
         │                     │                  │
         ▼                     ▼                  ▼
    PostgreSQL            ChromaDB           LLM provider
- (users, docs,        (chunk vectors,    (demo | Groq |
-  convos, events)      semantic search)   Claude, streaming)
+ (users, docs,        (chunk vectors,    (demo | Groq,
+  convos, events)      semantic search)   streaming)
 ```
 
 **RAG flow**: question → embed → top-k similarity search (scoped to your account) → excerpts injected into a grounded system prompt → the LLM streams an answer citing `[1]`, `[2]`… → both turns persisted with sources.
@@ -53,7 +53,7 @@ FastAPI ────────────────────────
 |---|---|
 | Frontend | React 18, TypeScript, Vite, TailwindCSS, Zustand, Recharts |
 | Backend | FastAPI, SQLAlchemy 2.0, Pydantic v2 |
-| LLM | Pluggable: demo (offline) / Groq / Anthropic Claude — all streaming |
+| LLM | Pluggable: demo (offline) / Groq — all streaming |
 | Vector store | ChromaDB (local embeddings — no embedding API cost) |
 | Database | PostgreSQL 16 |
 | Auth | PyJWT (access + rotating refresh tokens) + bcrypt |
@@ -72,10 +72,9 @@ docker compose up --build   # no .env needed — runs in free demo mode
 - App: http://localhost:3000
 - API docs (Swagger): http://localhost:8000/docs
 
-Want real model answers? Copy `.env.example` → `.env` and set either:
+Want real model answers? Copy `.env.example` → `.env` and set:
 
 - `LLM_PROVIDER=groq` + `GROQ_API_KEY` — free tier at [console.groq.com](https://console.groq.com), no payment method required
-- `LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY` — paid per token ([platform.claude.com](https://platform.claude.com))
 
 ### Manual (dev)
 
@@ -109,15 +108,14 @@ npm run build               # strict TypeScript typecheck + production build
 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
-| `LLM_PROVIDER` | no | `demo` | `demo` (offline, free), `groq`, or `anthropic` |
+| `LLM_PROVIDER` | no | `demo` | `demo` (offline, free) or `groq` |
 | `GROQ_API_KEY` | if `groq` | — | Free at console.groq.com — no payment method needed |
-| `ANTHROPIC_API_KEY` | if `anthropic` | — | Paid per token (platform.claude.com) |
 | `SECRET_KEY` | ✅ in prod | dev placeholder | JWT signing key — generate with `python -c "import secrets; print(secrets.token_hex(32))"`. The app **refuses to start** in production with the dev default. |
 | `ENVIRONMENT` | no | `development` | Set `production` to enforce the SECRET_KEY check |
 | `DATABASE_URL` | no | local Postgres | SQLAlchemy URL |
 | `POSTGRES_PASSWORD` | ✅ in prod | `postgres` | Database password (docker-compose) |
 | `DOMAIN` | prod only | — | Your domain for automatic HTTPS (`docker-compose.prod.yml`) |
-| `LLM_MODEL` / `GROQ_MODEL` | no | Opus 4.8 / Llama 3.3 70B | Model per provider |
+| `GROQ_MODEL` | no | Llama 3.3 70B | Model used by Groq |
 | `CHUNK_SIZE` / `CHUNK_OVERLAP` / `RAG_TOP_K` | no | 1000 / 200 / 5 | RAG tuning knobs |
 
 Copy `.env.example` → `.env` and fill in real values. `.env` files are git-ignored and must never be committed.
@@ -200,7 +198,7 @@ Skills exercised end-to-end in this codebase (resume-ready bullets):
 
 - Built a **full-stack RAG application** (React/TypeScript + FastAPI/PostgreSQL) that lets users chat with uploaded documents, with answers streamed token-by-token and grounded in cited source passages
 - Designed an **asynchronous document-ingestion pipeline** (extract → chunk → embed → index) with status tracking, error recovery, and a multi-tenant ChromaDB vector store filtered per user
-- Built a **pluggable LLM provider layer** (offline demo / Groq / Anthropic Claude) with streaming Server-Sent Events, prompt engineering for citation-grounded answers, and graceful degradation on failures
+- Built a **pluggable LLM provider layer** (offline demo / Groq) with streaming Server-Sent Events, prompt engineering for citation-grounded answers, and graceful degradation on failures
 - Implemented **JWT auth with rotating refresh tokens and server-side revocation**, per-user rate limiting, ownership-checked REST APIs, and an append-only analytics event log powering a usage dashboard
 - Wrote up a **threat model and security tradeoffs** (prompt injection, token storage, abuse limits) and enforced them in code — startup guards, magic-byte validation, tenant-scoped vector search
 - Shipped with **Docker Compose** (dev + production-with-HTTPS variants), **GitHub Actions CI** (lint, tests, typecheck, image builds), and a documented VPS deployment path

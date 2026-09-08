@@ -38,7 +38,7 @@ SECRET_KEY=<output of: python3 -c "import secrets; print(secrets.token_hex(32))"
 POSTGRES_PASSWORD=<long random password>
 
 # Optional — omit entirely to run in free demo mode (no AI spend possible)
-LLM_PROVIDER=groq          # or: anthropic
+LLM_PROVIDER=groq
 GROQ_API_KEY=gsk_...
 ```
 
