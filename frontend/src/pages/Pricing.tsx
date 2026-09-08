@@ -70,7 +70,7 @@ export default function Pricing() {
         <p className="mt-3 text-slate-400">Start free. Upgrade when you hit the limits.</p>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
-          <div className="card p-8 text-left">
+          <div className="card card-hover p-8 text-left">
             <h2 className="text-lg font-semibold">Free</h2>
             <p className="mt-2 font-display text-4xl font-bold">$0</p>
             <ul className="mt-6 space-y-3 text-sm text-slate-300">
@@ -90,7 +90,10 @@ export default function Pricing() {
             )}
           </div>
 
-          <div className="card border-brand-500/40 p-8 text-left ring-1 ring-brand-500/20">
+          <div className="card card-hover relative overflow-hidden border-brand-500/40 p-8 text-left ring-1 ring-brand-500/20">
+            <span className="absolute right-4 top-4 rounded-full bg-brand-500/15 px-2.5 py-0.5 text-xs font-medium text-brand-400">
+              Popular
+            </span>
             <h2 className="text-lg font-semibold text-brand-400">Pro</h2>
             <p className="mt-2 font-display text-4xl font-bold">
               ${price}
