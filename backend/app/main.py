@@ -35,7 +35,7 @@ def _check_secret_key() -> None:
             'Generate one with: python -c "import secrets; print(secrets.token_hex(32))"'
         )
     logger.warning(
-        "SECRET_KEY is the public development default — fine locally, never in production."
+        "SECRET_KEY is the public development default. Fine locally, never in production."
     )
 
 
@@ -67,7 +67,7 @@ async def lifespan(app: FastAPI):
     _check_secret_key()
     validate_provider_config()
     if settings.LLM_PROVIDER.lower() == "demo":
-        logger.info("LLM_PROVIDER=demo — chat streams canned responses; no API calls, no cost.")
+        logger.info("LLM_PROVIDER=demo: chat streams canned responses with no API calls.")
 
     Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
     if settings.DATABASE_URL.startswith("sqlite"):

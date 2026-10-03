@@ -60,7 +60,7 @@ def stream_chat(system: str, messages: list[dict], hits: list[dict] | None = Non
 def _stream_demo(messages: list[dict], hits: list[dict]) -> Iterator[str]:
     question = messages[-1]["content"] if messages else ""
     parts: list[str] = [
-        "**Demo mode** — no LLM is connected (`LLM_PROVIDER=demo`), so this reply is "
+        "**Demo mode.** No LLM is connected (`LLM_PROVIDER=demo`), so this reply is "
         "generated locally at zero cost. Everything else is real: your question was "
         "embedded, the vector store was searched, and the excerpts below were retrieved "
         "and ranked for relevance.\n\n"
@@ -76,7 +76,7 @@ def _stream_demo(messages: list[dict], hits: list[dict]) -> Iterator[str]:
     else:
         parts.append(
             "No relevant passages were found in your indexed documents for this "
-            "question — try uploading a related document or rephrasing. "
+            "question. Try uploading a related document or rephrasing. "
         )
     parts.append(
         "To enable real answers, set `LLM_PROVIDER=groq` (free tier, no card required) "
