@@ -210,7 +210,7 @@ async function readSseStream(
     throw new UpgradeRequiredError(body.detail?.reason ?? "Free limit reached.");
   }
   if (response.status === 429) {
-    throw new Error("You're asking a little too fast — try again in a minute.");
+    throw new Error("You're asking a little too fast. Try again in a minute.");
   }
   if (!response.ok || !response.body) {
     throw new Error(`Request failed with status ${response.status}`);

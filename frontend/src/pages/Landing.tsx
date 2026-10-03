@@ -85,7 +85,7 @@ function TrySample() {
         else if (event.type === "error") setError(event.detail);
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong — try again.");
+      setError(err instanceof Error ? err.message : "Something went wrong. Try again.");
     } finally {
       setBusy(false);
       setDone(true);
@@ -97,7 +97,7 @@ function TrySample() {
       <div className="card card-hover animate-fade-up p-6 sm:p-8">
         <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-slate-500">
           <span className="inline-block h-1.5 w-1.5 animate-blink rounded-full bg-brand-500" />
-          Try it right now — no signup
+          Try it now, no signup needed
         </p>
         <h2 className="mt-2 font-display text-2xl font-semibold">
           Ask our sample lease agreement anything
@@ -140,7 +140,7 @@ function TrySample() {
         {done && !error && (
           <div className="mt-5 flex flex-wrap items-center gap-4">
             <Link to="/register" className="btn-primary">
-              Upload your own document — free
+              Upload your own document for free
             </Link>
             <span className="text-xs text-slate-500">1 document · 10 questions/day free</span>
           </div>
@@ -198,11 +198,11 @@ export default function Landing() {
         </h1>
         <p className="animate-fade-up mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-400" style={{ animationDelay: "160ms" }}>
           DocMaid turns your contracts, reports, papers, and notes into a knowledge base you can
-          chat with — with every answer grounded in, and cited from, your own files.
+          chat with. Every answer is grounded in, and cited from, your own files.
         </p>
         <div className="animate-fade-up mt-8 flex justify-center gap-4" style={{ animationDelay: "240ms" }}>
           <a href="#try" className="btn-primary px-6 py-3 text-lg">
-            Try it free — no signup
+            Try it free, no signup
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14" />
               <path d="m12 5 7 7-7 7" />
@@ -232,7 +232,7 @@ export default function Landing() {
       </section>
 
       <footer className="border-t border-slate-800 py-8 text-center text-sm text-slate-500">
-        DocMaid AI — a RAG document intelligence platform. Built with React, FastAPI, PostgreSQL
+        DocMaid AI. Built with React, FastAPI, PostgreSQL
         &amp; ChromaDB.
       </footer>
     </div>
