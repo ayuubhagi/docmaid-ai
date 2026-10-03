@@ -74,7 +74,7 @@ def create_checkout_session(
                         "recurring": {"interval": "month"},
                         "product_data": {
                             "name": "DocMaid Pro",
-                            "description": "Unlimited questions, 50 documents, priority speed",
+                            "description": "Unlimited questions, 50 documents",
                         },
                     },
                 }

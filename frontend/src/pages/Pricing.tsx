@@ -15,7 +15,6 @@ const PRO_FEATURES = [
   "Unlimited questions",
   "Up to 50 documents",
   "Search across all documents",
-  "Priority speed",
 ];
 
 export default function Pricing() {
