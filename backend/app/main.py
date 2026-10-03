@@ -82,8 +82,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="RAG-powered document intelligence platform",
-    version="1.1.0",
+    description="Ask questions about your documents and get cited answers",
     lifespan=lifespan,
 )
 
