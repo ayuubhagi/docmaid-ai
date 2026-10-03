@@ -7,7 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from app import models  # noqa: F401 — ensures all models are registered with Base
+# Imported for its side effect: registers every model on Base.
+from app import models  # noqa: F401
 from app.api.routes import analytics, auth, billing, conversations, documents, sample
 from app.core.config import DEV_SECRET_KEY, settings
 from app.core.database import Base, SessionLocal, engine

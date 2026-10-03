@@ -8,8 +8,6 @@ DEV_SECRET_KEY = "dev-secret-key-change-in-production"
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables (or a .env file)."""
-
     PROJECT_NAME: str = "DocMaid AI"
     API_PREFIX: str = "/api"
 
@@ -38,7 +36,6 @@ class Settings(BaseSettings):
     FREE_QUESTIONS_PER_DAY: int = 10
     PRO_DOCUMENT_LIMIT: int = 50
 
-    # Database
     DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/docmaid"
 
     # AI provider: "demo" (no API, canned responses) or "groq" (free tier).
