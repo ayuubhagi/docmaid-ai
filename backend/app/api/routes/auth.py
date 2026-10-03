@@ -115,7 +115,7 @@ def logout(payload: RefreshRequest, db: Session = Depends(get_db)) -> None:
     """Revoke the presented refresh token so the session can't be extended."""
     decoded = decode_token(payload.refresh_token, "refresh")
     if decoded is None:
-        return  # already invalid — nothing to revoke
+        return  # already invalid, nothing to revoke
     db.execute(update(RefreshToken).where(RefreshToken.jti == decoded["jti"]).values(revoked=True))
     db.commit()
 

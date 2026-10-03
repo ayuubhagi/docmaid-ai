@@ -38,7 +38,7 @@ def _content_matches_extension(suffix: str, contents: bytes) -> bool:
     signatures = _MAGIC_BYTES.get(suffix)
     if signatures is not None:
         return contents.startswith(signatures)
-    # .txt / .md: no signature — require it to look like text (no NUL bytes).
+    # .txt and .md have no signature, so require them to look like text (no NUL bytes).
     return b"\x00" not in contents[:8192]
 
 
@@ -107,7 +107,7 @@ def upload_document(
     db.commit()
     db.refresh(document)
 
-    # Index asynchronously — the request returns immediately with status=pending
+    # Index in the background. The request returns immediately with status=pending
     # and the frontend polls until the document is ready.
     background_tasks.add_task(process_document, document.id)
 

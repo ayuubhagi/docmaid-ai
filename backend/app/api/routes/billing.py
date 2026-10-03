@@ -54,7 +54,6 @@ def create_checkout_session(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> dict:
-    """Create a Stripe Checkout session for the Pro subscription."""
     _require_stripe()
     if current_user.is_pro:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Already on Pro")
