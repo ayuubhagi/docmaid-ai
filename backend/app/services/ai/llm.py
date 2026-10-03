@@ -41,18 +41,14 @@ def validate_provider_config() -> None:
         return
     if provider == "anthropic":
         if not settings.ANTHROPIC_API_KEY:
-            raise ProviderConfigError(
-                "LLM_PROVIDER=anthropic requires ANTHROPIC_API_KEY to be set"
-            )
+            raise ProviderConfigError("LLM_PROVIDER=anthropic requires ANTHROPIC_API_KEY to be set")
         return
     raise ProviderConfigError(
         f"Unknown LLM_PROVIDER '{settings.LLM_PROVIDER}'. Use 'demo', 'groq', or 'anthropic'."
     )
 
 
-def stream_chat(
-    system: str, messages: list[dict], hits: list[dict] | None = None
-) -> Iterator[str]:
+def stream_chat(system: str, messages: list[dict], hits: list[dict] | None = None) -> Iterator[str]:
     """Yield response text deltas for the given conversation.
 
     `hits` (the retrieved chunks) are only used by the demo provider to build
@@ -83,8 +79,7 @@ def _stream_demo(messages: list[dict], hits: list[dict]) -> Iterator[str]:
             snippet = " ".join(hit["text"].split())[:220]
             parts.append(f'[{i}] From *{hit["filename"]}*: "{snippet}…"\n\n')
         parts.append(
-            "With a live model these passages would be synthesized into a direct, "
-            "cited answer. "
+            "With a live model these passages would be synthesized into a direct, cited answer. "
         )
     else:
         parts.append(

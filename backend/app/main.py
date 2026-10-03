@@ -32,7 +32,7 @@ def _check_secret_key() -> None:
     if settings.is_production:
         raise RuntimeError(
             "SECRET_KEY is still the public development default. "
-            "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+            'Generate one with: python -c "import secrets; print(secrets.token_hex(32))"'
         )
     logger.warning(
         "SECRET_KEY is the public development default — fine locally, never in production."

@@ -147,8 +147,6 @@ def delete_document(
     vector_store.delete_document(document.id, user_id=current_user.id)
     Path(document.file_path).unlink(missing_ok=True)
 
-    analytics.track_event(
-        db, current_user.id, "document_deleted", {"document_id": document.id}
-    )
+    analytics.track_event(db, current_user.id, "document_deleted", {"document_id": document.id})
     db.delete(document)
     db.commit()

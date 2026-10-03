@@ -42,9 +42,7 @@ def billing_config() -> dict:
 
 
 @router.get("/usage")
-def my_usage(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
-) -> dict:
+def my_usage(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> dict:
     """Current plan + consumption, for the dashboard progress ring and paywall copy."""
     return usage.usage_summary(db, current_user)
 

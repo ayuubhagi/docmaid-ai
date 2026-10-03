@@ -55,9 +55,7 @@ def _get_collection() -> chromadb.Collection:
     )
 
 
-def add_document_chunks(
-    document_id: int, user_id: int, filename: str, chunks: list[str]
-) -> None:
+def add_document_chunks(document_id: int, user_id: int, filename: str, chunks: list[str]) -> None:
     collection = _get_collection()
     for start in range(0, len(chunks), _BATCH_SIZE):
         batch = chunks[start : start + _BATCH_SIZE]
@@ -76,9 +74,7 @@ def add_document_chunks(
         )
 
 
-def search(
-    user_id: int, query: str, top_k: int, document_id: int | None = None
-) -> list[dict]:
+def search(user_id: int, query: str, top_k: int, document_id: int | None = None) -> list[dict]:
     """Semantic search over the user's chunks, optionally scoped to one document."""
     collection = _get_collection()
     if document_id is None:
@@ -108,9 +104,7 @@ def search(
 def delete_document(document_id: int, user_id: int) -> None:
     # user_id is redundant with the caller's ownership check, but scoping the
     # delete costs nothing and protects any future code path that forgets it.
-    _get_collection().delete(
-        where={"$and": [{"document_id": document_id}, {"user_id": user_id}]}
-    )
+    _get_collection().delete(where={"$and": [{"document_id": document_id}, {"user_id": user_id}]})
 
 
 def has_document(document_id: int) -> bool:

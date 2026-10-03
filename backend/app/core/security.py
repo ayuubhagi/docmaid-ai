@@ -35,9 +35,7 @@ def _create_token(subject: str | int, token_type: str, lifetime: timedelta) -> s
 
 
 def create_access_token(subject: str | int) -> str:
-    return _create_token(
-        subject, "access", timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
+    return _create_token(subject, "access", timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
 
 
 def create_refresh_token(subject: str | int) -> str:

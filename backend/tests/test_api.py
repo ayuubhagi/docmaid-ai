@@ -162,9 +162,7 @@ def test_free_tier_upload_limit_enforced(monkeypatch) -> None:
 def test_free_tier_daily_question_limit_enforced(monkeypatch) -> None:
     from app.services.ai import rag, vector_store
 
-    monkeypatch.setattr(
-        vector_store, "search", lambda user_id, query, top_k, document_id=None: []
-    )
+    monkeypatch.setattr(vector_store, "search", lambda user_id, query, top_k, document_id=None: [])
     monkeypatch.setattr(rag, "HISTORY_LIMIT", 0)
     with TestClient(app) as client:
         headers = _auth_headers(client)

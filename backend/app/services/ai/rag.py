@@ -50,7 +50,7 @@ def _sse(payload: dict) -> str:
 def _build_context(hits: list[dict]) -> str:
     sections = []
     for i, hit in enumerate(hits, start=1):
-        sections.append(f"[{i}] (from \"{hit['filename']}\")\n{hit['text']}")
+        sections.append(f'[{i}] (from "{hit["filename"]}")\n{hit["text"]}')
     return "\n\n---\n\n".join(sections)
 
 
