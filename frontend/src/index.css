@@ -9,7 +9,7 @@
 
   body {
     @apply bg-slate-950 font-sans text-slate-100 antialiased;
-    /* Faint warm glow anchored top-center — barely-there depth, not a gradient wash. */
+    /* Faint amber glow at the top of the page. */
     background-image: radial-gradient(
       70rem 40rem at 50% -8rem,
       rgba(245, 158, 11, 0.06),
@@ -28,7 +28,7 @@
     letter-spacing: -0.015em;
   }
 
-  /* Quiet, slim scrollbars that match the palette. */
+  /* Slim scrollbars in the slate palette. */
   * {
     scrollbar-width: thin;
     scrollbar-color: #334155 transparent;
@@ -47,7 +47,7 @@
     background-color: #334155;
   }
 
-  /* One consistent, accessible focus ring across the whole app. */
+  /* Same visible focus ring on every interactive element, for keyboard users. */
   :focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px #020617, 0 0 0 4px rgba(245, 158, 11, 0.7);
@@ -97,7 +97,7 @@
   }
 }
 
-/* Respect people who prefer less motion — turn everything calm. */
+/* Turn off animations for users who set prefers-reduced-motion. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

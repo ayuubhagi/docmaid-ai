@@ -14,7 +14,7 @@ import type {
   User,
 } from "../types";
 
-/** Thrown when the server responds 402 — the free-tier limit was hit. */
+/** Thrown when the server responds 402 because a free-tier limit was hit. */
 export class UpgradeRequiredError extends Error {
   constructor(reason: string) {
     super(reason);
@@ -46,7 +46,7 @@ export function setTokens(access: string | null, refresh: string | null): void {
 }
 
 // Same-origin by default (dev proxy / docker nginx); VITE_API_URL points the
-// static frontend at a separately hosted backend (e.g. Vercel -> Render).
+// static frontend at a separately hosted backend (Vercel calling Render in production).
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 
 const api = axios.create({ baseURL: `${API_BASE}/api` });
@@ -82,7 +82,7 @@ api.interceptors.response.use(undefined, async (error) => {
       original.headers.Authorization = `Bearer ${getToken()}`;
       return api.request(original);
     }
-    // Refresh failed: session is over — clear and send the user to login.
+    // Refresh failed, so the session is over: clear tokens and go to login.
     if (window.location.pathname !== "/login") {
       setTokens(null, null);
       window.location.href = "/login";
