@@ -1,4 +1,4 @@
-"""RAG orchestration: retrieve -> build grounded prompt -> stream answer -> persist.
+"""RAG orchestration: retrieve chunks, build a grounded prompt, stream the answer, persist the turn.
 
 The public entrypoint `answer_question_stream` is a generator of Server-Sent
 Event frames. Event protocol:
@@ -90,7 +90,7 @@ def answer_oneoff_stream(user_id: int, document_id: int, question: str) -> Itera
         for token in llm.stream_chat(system, [{"role": "user", "content": question}], hits=hits):
             yield _sse({"type": "token", "content": token})
         yield _sse({"type": "done", "message_id": None})
-    except Exception:  # noqa: BLE001 — surface errors to the client instead of dropping the stream
+    except Exception:  # send an error frame instead of silently dropping the stream
         logger.exception("Sample stream failed")
         yield _sse({"type": "error", "detail": "Failed to generate an answer. Please try again."})
 
@@ -100,8 +100,7 @@ def answer_question_stream(
 ) -> Iterator[str]:
     """Stream a grounded answer as SSE frames and persist both sides of the turn."""
     try:
-        # 1. Retrieve relevant chunks (scoped to one document, or all of the user's).
-        #    Rebuild any vectors lost to an ephemeral-disk restart first.
+        # Rebuild any vectors lost to an ephemeral-disk restart before searching.
         reindex.ensure_indexed(user.id, conversation.document_id)
         hits = vector_store.search(
             user_id=user.id,
@@ -122,8 +121,6 @@ def answer_question_stream(
         ]
         yield _sse({"type": "sources", "sources": sources})
 
-        # 2. Build the grounded prompt. History gives the model conversational
-        #    context; the system prompt carries the retrieved excerpts.
         system = (
             SYSTEM_PROMPT_TEMPLATE.format(context=_build_context(hits))
             if hits
@@ -131,23 +128,21 @@ def answer_question_stream(
         )
         messages = _build_history(conversation) + [{"role": "user", "content": question}]
 
-        # 3. Persist the user turn before generation so it survives mid-stream failures.
+        # Commit the user turn before generation so it survives mid-stream failures.
         user_message = Message(conversation_id=conversation.id, role="user", content=question)
         db.add(user_message)
         if conversation.title == "New conversation":
             conversation.title = question[:60] + ("…" if len(question) > 60 else "")
         db.commit()
 
-        # 4. Stream the answer.
         answer_parts: list[str] = []
         for token in llm.stream_chat(system, messages, hits=hits):
             answer_parts.append(token)
             yield _sse({"type": "token", "content": token})
 
-        # 5. Persist the assistant turn with its sources.
-        # Note: if the client disconnects mid-stream, the generator is closed and
-        # this persist never runs — the turn simply has no assistant message. The
-        # user turn was already committed in step 3, so nothing is corrupted.
+        # If the client disconnects mid-stream, the generator is closed and this
+        # never runs. The turn keeps only the user message, which is already
+        # committed, so nothing is corrupted.
         assistant_message = Message(
             conversation_id=conversation.id,
             role="assistant",
@@ -164,7 +159,7 @@ def answer_question_stream(
         db.commit()
 
         yield _sse({"type": "done", "message_id": assistant_message.id})
-    except Exception:  # noqa: BLE001 — surface errors to the client instead of dropping the stream
+    except Exception:  # send an error frame instead of silently dropping the stream
         logger.exception("RAG stream failed for conversation %s", conversation.id)
         db.rollback()
         yield _sse({"type": "error", "detail": "Failed to generate an answer. Please try again."})

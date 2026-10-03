@@ -1,4 +1,4 @@
-"""Document ingestion pipeline: extract -> chunk -> embed -> index.
+"""Document ingestion pipeline: extract text, split it into chunks, embed and index them.
 
 `process_document` runs as a FastAPI BackgroundTask after upload. It opens its
 own DB session because the request-scoped session is closed by the time the
@@ -85,7 +85,7 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> list[str]:
 
 
 def process_document(document_id: int) -> None:
-    """Background task entrypoint. Never raises — failures are written to the DB row."""
+    """Background task entrypoint. Never raises; failures are written to the DB row."""
     db = SessionLocal()
     try:
         document = db.get(Document, document_id)
@@ -132,7 +132,7 @@ def process_document(document_id: int) -> None:
             )
             db.commit()
             logger.info("Indexed document %s (%s chunks)", document.id, len(chunks))
-        except Exception as exc:  # noqa: BLE001 — background task must not crash the worker
+        except Exception as exc:  # a background task must not crash the worker
             logger.exception("Failed to process document %s", document_id)
             document.status = DocumentStatus.FAILED
             document.error_message = (

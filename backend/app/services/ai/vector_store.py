@@ -3,8 +3,8 @@
 A single persistent collection holds every user's chunks; rows are scoped with
 user_id / document_id metadata and every query filters on user_id, so one user
 can never retrieve another user's content. Embeddings use Chroma's built-in
-local model (all-MiniLM-L6-v2 via ONNX) — no per-token embedding cost and no
-extra API dependency.
+local model (all-MiniLM-L6-v2 via ONNX), so there is no per-token embedding
+cost and no extra API dependency.
 """
 
 from functools import lru_cache
@@ -30,7 +30,7 @@ class _HashEmbeddingFunction(EmbeddingFunction[Documents]):
     def name(self) -> str:  # chroma>=0.5 identifies embedding functions by name
         return "docmaid-hash-test"
 
-    def __call__(self, input: Documents) -> Embeddings:  # noqa: A002 — chroma API name
+    def __call__(self, input: Documents) -> Embeddings:  # chroma calls this parameter "input"
         import hashlib
 
         vectors = []
@@ -75,7 +75,6 @@ def add_document_chunks(document_id: int, user_id: int, filename: str, chunks: l
 
 
 def search(user_id: int, query: str, top_k: int, document_id: int | None = None) -> list[dict]:
-    """Semantic search over the user's chunks, optionally scoped to one document."""
     collection = _get_collection()
     if document_id is None:
         where = {"user_id": user_id}

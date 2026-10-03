@@ -3,8 +3,8 @@
 Two backends selected by settings.LLM_PROVIDER:
 
 - "demo" (default): no external API at all. Streams a canned answer built from
-  the retrieved excerpts, so the full RAG pipeline (embed -> search -> rank ->
-  cite) still runs and the UI behaves exactly like production. Zero cost.
+  the retrieved excerpts, so embedding, search, ranking and citations all
+  still run and the UI behaves exactly like production. Zero cost.
 - "groq": Groq's OpenAI-compatible API. Has a free tier that requires no
   payment method, so it can never bill anything.
 
@@ -54,9 +54,6 @@ def stream_chat(system: str, messages: list[dict], hits: list[dict] | None = Non
     return _stream_demo(messages, hits or [])
 
 
-# ---- demo ----
-
-
 def _stream_demo(messages: list[dict], hits: list[dict]) -> Iterator[str]:
     question = messages[-1]["content"] if messages else ""
     parts: list[str] = [
@@ -86,9 +83,6 @@ def _stream_demo(messages: list[dict], hits: list[dict]) -> Iterator[str]:
     for word in "".join(parts).split(" "):
         yield word + " "
         time.sleep(_DEMO_TOKEN_DELAY_SECONDS)
-
-
-# ---- groq (OpenAI-compatible) ----
 
 
 def _stream_groq(system: str, messages: list[dict]) -> Iterator[str]:
