@@ -3,7 +3,7 @@
 import os
 import uuid
 
-# Must be set before any app import — settings are read at import time.
+# Must be set before any app import, because settings are read at import time.
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 os.environ["LLM_PROVIDER"] = "demo"
 os.environ["EMBEDDING_PROVIDER"] = "hash"  # offline deterministic embeddings
@@ -195,7 +195,7 @@ def test_pro_user_bypasses_limits(monkeypatch) -> None:
         payload = _register_payload()
         client.post("/api/auth/register", json=payload)
 
-        # Flip the plan directly in the DB — simulating what the webhook does.
+        # Flip the plan directly in the DB, as the Stripe webhook would.
         from sqlalchemy import select
 
         from app.core.database import SessionLocal

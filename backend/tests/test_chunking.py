@@ -1,4 +1,4 @@
-"""Unit tests for the chunking logic — pure functions, no app/DB needed."""
+"""Unit tests for the chunking logic. Pure functions, no app or DB needed."""
 
 import os
 
