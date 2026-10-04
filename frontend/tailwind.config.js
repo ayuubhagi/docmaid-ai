@@ -18,7 +18,6 @@ export default {
         display: ['Fraunces', 'Georgia', 'Cambria', 'serif'],
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(245, 158, 11, 0.18), 0 12px 40px -12px rgba(245, 158, 11, 0.28)",
         lift: "0 18px 48px -20px rgba(0, 0, 0, 0.7)",
       },
       keyframes: {

@@ -9,13 +9,6 @@
 
   body {
     @apply bg-slate-950 font-sans text-slate-100 antialiased;
-    /* Faint amber glow at the top of the page. */
-    background-image: radial-gradient(
-      70rem 40rem at 50% -8rem,
-      rgba(245, 158, 11, 0.06),
-      transparent 60%
-    );
-    background-attachment: fixed;
   }
 
   ::selection {
@@ -57,7 +50,7 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 font-medium text-slate-950 shadow-sm transition-all duration-150 hover:bg-brand-400 hover:shadow-glow active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-sm;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 font-medium text-slate-950 shadow-sm transition-all duration-150 hover:bg-brand-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-4 py-2 font-medium text-slate-200 transition-all duration-150 hover:border-slate-500 hover:bg-slate-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
