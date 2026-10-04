@@ -54,7 +54,7 @@ def get_sample_document(db: Session) -> Document | None:
 
 
 def seed_sample_document(db: Session) -> None:
-    """Idempotent startup seed. Failures are logged, never fatal — the app
+    """Idempotent startup seed. Failures are logged, never fatal: the app
     must still boot if e.g. the embedding model can't download yet."""
     try:
         if get_sample_document(db) is not None:
@@ -95,6 +95,6 @@ def seed_sample_document(db: Session) -> None:
         )
         db.commit()
         logger.info("Seeded sample document (%d chunks)", len(chunks))
-    except Exception:  # noqa: BLE001 — seeding must never block startup
+    except Exception:  # seeding must never block startup
         db.rollback()
         logger.exception("Failed to seed sample document; /api/sample will be unavailable")

@@ -64,7 +64,7 @@ export default function Analytics() {
       </div>
 
       <div className="card mt-8">
-        <h2 className="mb-6 text-lg font-semibold">Activity — last 14 days</h2>
+        <h2 className="mb-6 text-lg font-semibold">Activity in the last 14 days</h2>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={activity}>

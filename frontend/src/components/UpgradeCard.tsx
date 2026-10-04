@@ -24,14 +24,14 @@ export default function UpgradeCard({ reason }: { reason: string }) {
       <p className="text-sm font-medium text-slate-200">{reason}</p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button className="btn-primary text-sm" disabled={busy} onClick={() => void handleUpgrade()}>
-          {busy ? "Redirecting…" : "Upgrade to Pro — $6.99/mo"}
+          {busy ? "Redirecting…" : "Upgrade to Pro ($6.99/mo)"}
         </button>
         <Link to="/pricing" className="text-sm text-slate-400 hover:text-slate-200">
           See what's included
         </Link>
       </div>
       {failed && (
-        <p className="mt-2 text-xs text-red-400">Checkout didn't start — please try again.</p>
+        <p className="mt-2 text-xs text-red-400">Checkout didn't start. Please try again.</p>
       )}
     </div>
   );

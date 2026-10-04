@@ -18,9 +18,7 @@ class Conversation(Base):
         ForeignKey("documents.id", ondelete="SET NULL"), nullable=True
     )
     title: Mapped[str] = mapped_column(String(255), default="New conversation")
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     owner = relationship("User", back_populates="conversations")
     document = relationship("Document")
@@ -43,8 +41,6 @@ class Message(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     # Retrieved chunks used to ground the answer: [{document_id, filename, chunk_index, snippet}]
     sources: Mapped[list | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     conversation = relationship("Conversation", back_populates="messages")

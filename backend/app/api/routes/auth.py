@@ -96,9 +96,7 @@ def refresh(request: Request, payload: RefreshRequest, db: Session = Depends(get
     if record.revoked:
         # Reuse of a rotated token: kill all of this user's refresh tokens.
         db.execute(
-            update(RefreshToken)
-            .where(RefreshToken.user_id == record.user_id)
-            .values(revoked=True)
+            update(RefreshToken).where(RefreshToken.user_id == record.user_id).values(revoked=True)
         )
         db.commit()
         raise invalid
@@ -117,10 +115,8 @@ def logout(payload: RefreshRequest, db: Session = Depends(get_db)) -> None:
     """Revoke the presented refresh token so the session can't be extended."""
     decoded = decode_token(payload.refresh_token, "refresh")
     if decoded is None:
-        return  # already invalid — nothing to revoke
-    db.execute(
-        update(RefreshToken).where(RefreshToken.jti == decoded["jti"]).values(revoked=True)
-    )
+        return  # already invalid, nothing to revoke
+    db.execute(update(RefreshToken).where(RefreshToken.jti == decoded["jti"]).values(revoked=True))
     db.commit()
 
 

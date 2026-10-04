@@ -38,7 +38,7 @@ def _content_matches_extension(suffix: str, contents: bytes) -> bool:
     signatures = _MAGIC_BYTES.get(suffix)
     if signatures is not None:
         return contents.startswith(signatures)
-    # .txt / .md: no signature — require it to look like text (no NUL bytes).
+    # .txt and .md have no signature, so require them to look like text (no NUL bytes).
     return b"\x00" not in contents[:8192]
 
 
@@ -107,7 +107,7 @@ def upload_document(
     db.commit()
     db.refresh(document)
 
-    # Index asynchronously — the request returns immediately with status=pending
+    # Index in the background. The request returns immediately with status=pending
     # and the frontend polls until the document is ready.
     background_tasks.add_task(process_document, document.id)
 
@@ -147,8 +147,6 @@ def delete_document(
     vector_store.delete_document(document.id, user_id=current_user.id)
     Path(document.file_path).unlink(missing_ok=True)
 
-    analytics.track_event(
-        db, current_user.id, "document_deleted", {"document_id": document.id}
-    )
+    analytics.track_event(db, current_user.id, "document_deleted", {"document_id": document.id})
     db.delete(document)
     db.commit()

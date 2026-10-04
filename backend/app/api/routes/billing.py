@@ -42,9 +42,7 @@ def billing_config() -> dict:
 
 
 @router.get("/usage")
-def my_usage(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
-) -> dict:
+def my_usage(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> dict:
     """Current plan + consumption, for the dashboard progress ring and paywall copy."""
     return usage.usage_summary(db, current_user)
 
@@ -56,7 +54,6 @@ def create_checkout_session(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> dict:
-    """Create a Stripe Checkout session for the Pro subscription."""
     _require_stripe()
     if current_user.is_pro:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Already on Pro")
@@ -76,7 +73,7 @@ def create_checkout_session(
                         "recurring": {"interval": "month"},
                         "product_data": {
                             "name": "DocMaid Pro",
-                            "description": "Unlimited questions, 50 documents, priority speed",
+                            "description": "Unlimited questions, 50 documents",
                         },
                     },
                 }

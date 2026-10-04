@@ -1,4 +1,4 @@
-# Environment & secrets — never commit real keys
+# Environment and secrets
 .env
 .env.*
 !.env.example
@@ -25,15 +25,13 @@ node_modules/
 dist/
 build/
 
-# Claude Code / AI tooling local state
-.claude/
-
 # Logs & temp
 *.log
 *.tmp
 
-# Editors / OS
+# Editors, local tool state, OS
 .vscode/
 .idea/
+.claude/
 .DS_Store
 Thumbs.db

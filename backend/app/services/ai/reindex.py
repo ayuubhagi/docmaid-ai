@@ -4,7 +4,7 @@ On the free-tier deployment the Chroma index lives on ephemeral disk and is
 wiped by every restart/redeploy, while accounts and document chunks live in
 Postgres and survive. Before any retrieval, `ensure_indexed` rebuilds missing
 vectors from the chunks table. Embeddings are computed locally
-(all-MiniLM-L6-v2), so a rebuild costs CPU time only — no API spend.
+(all-MiniLM-L6-v2), so a rebuild costs CPU time but no API spend.
 """
 
 import logging
@@ -59,5 +59,5 @@ def ensure_indexed(user_id: int, document_id: int | None = None) -> None:
                     document.id,
                     len(chunks),
                 )
-    except Exception:  # noqa: BLE001 — degraded retrieval beats a crashed stream
+    except Exception:  # degraded retrieval beats a crashed stream
         logger.exception("ensure_indexed failed for user %s", user_id)

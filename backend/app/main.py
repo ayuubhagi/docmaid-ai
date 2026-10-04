@@ -7,7 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from app import models  # noqa: F401 — ensures all models are registered with Base
+# Imported for its side effect: registers every model on Base.
+from app import models  # noqa: F401
 from app.api.routes import analytics, auth, billing, conversations, documents, sample
 from app.core.config import DEV_SECRET_KEY, settings
 from app.core.database import Base, SessionLocal, engine
@@ -32,10 +33,10 @@ def _check_secret_key() -> None:
     if settings.is_production:
         raise RuntimeError(
             "SECRET_KEY is still the public development default. "
-            "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+            'Generate one with: python -c "import secrets; print(secrets.token_hex(32))"'
         )
     logger.warning(
-        "SECRET_KEY is the public development default — fine locally, never in production."
+        "SECRET_KEY is the public development default. Fine locally, never in production."
     )
 
 
@@ -67,7 +68,7 @@ async def lifespan(app: FastAPI):
     _check_secret_key()
     validate_provider_config()
     if settings.LLM_PROVIDER.lower() == "demo":
-        logger.info("LLM_PROVIDER=demo — chat streams canned responses; no API calls, no cost.")
+        logger.info("LLM_PROVIDER=demo: chat streams canned responses with no API calls.")
 
     Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
     if settings.DATABASE_URL.startswith("sqlite"):
@@ -82,8 +83,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="RAG-powered document intelligence platform",
-    version="1.1.0",
+    description="Ask questions about your documents and get cited answers",
     lifespan=lifespan,
 )
 

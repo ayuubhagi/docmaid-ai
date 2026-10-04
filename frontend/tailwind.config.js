@@ -18,7 +18,6 @@ export default {
         display: ['Fraunces', 'Georgia', 'Cambria', 'serif'],
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(245, 158, 11, 0.18), 0 12px 40px -12px rgba(245, 158, 11, 0.28)",
         lift: "0 18px 48px -20px rgba(0, 0, 0, 0.7)",
       },
       keyframes: {
@@ -37,16 +36,11 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.15" },
         },
-        "bob": {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-3px)" },
-        },
       },
       animation: {
         "fade-up": "fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both",
         "fade-in": "fade-in 0.5s ease both",
         blink: "blink 1.1s ease-in-out infinite",
-        bob: "bob 2.8s ease-in-out infinite",
       },
     },
   },

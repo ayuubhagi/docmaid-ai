@@ -3,8 +3,8 @@
 A single persistent collection holds every user's chunks; rows are scoped with
 user_id / document_id metadata and every query filters on user_id, so one user
 can never retrieve another user's content. Embeddings use Chroma's built-in
-local model (all-MiniLM-L6-v2 via ONNX) — no per-token embedding cost and no
-extra API dependency.
+local model (all-MiniLM-L6-v2 via ONNX), so there is no per-token embedding
+cost and no extra API dependency.
 """
 
 from functools import lru_cache
@@ -30,7 +30,7 @@ class _HashEmbeddingFunction(EmbeddingFunction[Documents]):
     def name(self) -> str:  # chroma>=0.5 identifies embedding functions by name
         return "docmaid-hash-test"
 
-    def __call__(self, input: Documents) -> Embeddings:  # noqa: A002 — chroma API name
+    def __call__(self, input: Documents) -> Embeddings:  # chroma calls this parameter "input"
         import hashlib
 
         vectors = []
@@ -55,9 +55,7 @@ def _get_collection() -> chromadb.Collection:
     )
 
 
-def add_document_chunks(
-    document_id: int, user_id: int, filename: str, chunks: list[str]
-) -> None:
+def add_document_chunks(document_id: int, user_id: int, filename: str, chunks: list[str]) -> None:
     collection = _get_collection()
     for start in range(0, len(chunks), _BATCH_SIZE):
         batch = chunks[start : start + _BATCH_SIZE]
@@ -76,10 +74,7 @@ def add_document_chunks(
         )
 
 
-def search(
-    user_id: int, query: str, top_k: int, document_id: int | None = None
-) -> list[dict]:
-    """Semantic search over the user's chunks, optionally scoped to one document."""
+def search(user_id: int, query: str, top_k: int, document_id: int | None = None) -> list[dict]:
     collection = _get_collection()
     if document_id is None:
         where = {"user_id": user_id}
@@ -108,9 +103,7 @@ def search(
 def delete_document(document_id: int, user_id: int) -> None:
     # user_id is redundant with the caller's ownership check, but scoping the
     # delete costs nothing and protects any future code path that forgets it.
-    _get_collection().delete(
-        where={"$and": [{"document_id": document_id}, {"user_id": user_id}]}
-    )
+    _get_collection().delete(where={"$and": [{"document_id": document_id}, {"user_id": user_id}]})
 
 
 def has_document(document_id: int) -> bool:

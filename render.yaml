@@ -34,7 +34,7 @@ services:
       - key: CHROMA_PERSIST_DIR
         value: /tmp/chroma_data
       - key: CORS_ORIGINS
-        value: https://documind-ai-hazel-theta.vercel.app
+        value: https://docmaid-ai.vercel.app,https://documind-ai-hazel-theta.vercel.app
       - key: FRONTEND_URL
         value: https://documind-ai-hazel-theta.vercel.app
       # Set these in the Render dashboard (never committed):

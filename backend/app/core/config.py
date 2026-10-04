@@ -8,8 +8,6 @@ DEV_SECRET_KEY = "dev-secret-key-change-in-production"
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables (or a .env file)."""
-
     PROJECT_NAME: str = "DocMaid AI"
     API_PREFIX: str = "/api"
 
@@ -38,14 +36,11 @@ class Settings(BaseSettings):
     FREE_QUESTIONS_PER_DAY: int = 10
     PRO_DOCUMENT_LIMIT: int = 50
 
-    # Database
     DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/docmaid"
 
-    # AI provider: "demo" (no API, canned responses), "groq" (free tier), or "anthropic".
+    # AI provider: "demo" (no API, canned responses) or "groq" (free tier).
     # Demo is the default so the project runs with zero API keys and zero cost.
     LLM_PROVIDER: str = "demo"
-    ANTHROPIC_API_KEY: str = ""
-    LLM_MODEL: str = "claude-opus-4-8"
     LLM_MAX_TOKENS: int = 8192
     GROQ_API_KEY: str = ""
     GROQ_MODEL: str = "llama-3.3-70b-versatile"

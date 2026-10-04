@@ -221,7 +221,7 @@ export default function Dashboard() {
                       {doc.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-slate-400">{doc.chunk_count || "—"}</td>
+                  <td className="px-5 py-3 text-slate-400">{doc.chunk_count || "-"}</td>
                   <td className="px-5 py-3 text-right">
                     <div className="flex justify-end gap-2">
                       {doc.status === "ready" && (

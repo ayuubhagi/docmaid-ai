@@ -37,7 +37,13 @@ def _upload_ready_document(client: TestClient, headers: dict) -> int:
     response = client.post(
         "/api/documents/upload",
         headers=headers,
-        files={"file": ("persistence-note.txt", b"The vault code is 7401.\n\nKeep it secret.", "text/plain")},
+        files={
+            "file": (
+                "persistence-note.txt",
+                b"The vault code is 7401.\n\nKeep it secret.",
+                "text/plain",
+            )
+        },
     )
     assert response.status_code in (200, 201), response.text
     document_id = response.json()["id"]
@@ -68,7 +74,9 @@ def test_chunks_persist_and_reindex_after_vector_loss() -> None:
 
         reindex.ensure_indexed(user_id, document_id)
         assert vector_store.has_document(document_id)
-        hits = vector_store.search(user_id=user_id, query="vault code", top_k=3, document_id=document_id)
+        hits = vector_store.search(
+            user_id=user_id, query="vault code", top_k=3, document_id=document_id
+        )
         assert hits and "7401" in hits[0]["text"]
 
 

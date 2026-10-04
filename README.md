@@ -1,217 +1,78 @@
-# DocMaid AI 📄✨
+# DocMaid
 
-**Chat with your documents.** Upload PDFs, Word docs, or notes — DocMaid indexes them with a retrieval-augmented generation (RAG) pipeline and answers your questions in real time, with every claim cited back to the exact source passage.
+Upload a document, ask questions about it, and get answers that cite the passages they came from.
 
-> Full-stack AI engineering project: React · FastAPI · PostgreSQL · ChromaDB · pluggable LLM backends (demo / Groq) · Docker · GitHub Actions
+Live at https://docmaid-ai.vercel.app. You can ask the sample lease questions without signing up. The backend is on Render's free tier, so the first request after 15 idle minutes takes about a minute.
 
-**[Live demo → docmaid-ai.vercel.app/](https://docmaid-ai.vercel.app/)** — free-tier hosting, so the first request after idle takes ~1 minute to wake the backend. Accounts and documents persist in managed Postgres; the vector index rebuilds automatically from stored chunks after restarts.
+## Why I built it
 
-**Runs with zero API keys and zero cost out of the box** — the default `demo` provider streams canned responses through the real RAG pipeline, so you can clone, `docker compose up`, and try everything without creating an account anywhere.
+I wanted to drop in a PDF, ask questions about it, and get answers I could check against the document. ChatGPT and similar tools would often answer confidently and be wrong, with no easy way to see where an answer came from. So every answer here shows the passages it was based on.
 
----
+I built the first version in June 2026. It went live, 33 people signed up, and it broke three times in one week in late September. Those incidents are below, along with what I changed.
 
-## Why this exists
+## How it works
 
-Knowledge workers and students waste hours scanning long documents for specific answers. Ctrl+F finds words, not meaning. DocMaid solves this with semantic search + LLM generation: ask *"What are the termination conditions in this contract?"* and get a direct, cited answer in seconds.
+When you upload a PDF, Word, Markdown or text file, a background task extracts the text, splits it into chunks of about 1,000 characters with 200 characters of overlap, and embeds each chunk locally with all-MiniLM-L6-v2. Chunk text goes into Postgres and vectors go into ChromaDB.
 
-## Features
+When you ask a question, the backend embeds it, takes the 5 closest chunks from your own documents, puts them in the prompt as numbered excerpts, and streams the model's answer back over Server-Sent Events. The answer cites excerpts as [1], [2] and so on.
 
-- 🔐 **Accounts & auth** — short-lived JWT access tokens + rotating, server-side-revocable refresh tokens; bcrypt password hashing
-- 📤 **Document ingestion pipeline** — PDF/DOCX/TXT/MD → text extraction → paragraph-aware chunking → vector embedding, processed asynchronously in the background
-- 🧠 **RAG chat** — semantic retrieval over your documents, grounded prompting, and token-by-token streaming answers
-- 🔌 **Pluggable LLM backends** — `demo` (free, no API) or Groq (free tier) via one config flag
-- 📎 **Citations** — every answer references the exact excerpts it was grounded in
-- 🗂 **Per-document or global chat** — scope a conversation to one file or search everything
-- 📊 **Analytics dashboard** — documents indexed, questions asked, and 14-day activity chart
-- 🐳 **One-command deployment** — Docker Compose with Postgres, persistent volumes, and health checks
-- ✅ **CI** — GitHub Actions runs linting, tests, typechecking, and Docker builds on every push
-- 🛡 **Hardened API** — per-user rate limiting, magic-byte upload validation, prompt-injection mitigations, Alembic migrations (see [Security considerations](#security-considerations))
+React, TypeScript, Vite and Tailwind on Vercel. FastAPI, SQLAlchemy and Alembic on Render. Postgres on Neon. Groq for the model.
 
-## Architecture
+## Decisions
 
-```
-React (Vite + TS + Tailwind)
-        │  REST + Server-Sent Events
-        ▼
-FastAPI ─────────────────────────────────────────────
- ├─ Auth (JWT + bcrypt)
- ├─ Documents API ──► BackgroundTask: extract → chunk → embed
- ├─ Conversations API ──► RAG: retrieve → ground → stream
- └─ Analytics API
-        │                     │                  │
-        ▼                     ▼                  ▼
-   PostgreSQL            ChromaDB           LLM provider
- (users, docs,        (chunk vectors,    (demo | Groq,
-  convos, events)      semantic search)   streaming)
-```
+- Chunk text lives in Postgres, not only in Chroma. Render's free disk is wiped on every restart, so the Chroma index is disposable. Before a search, the backend rebuilds any missing vectors from the stored chunks.
+- Embeddings run locally, so the LLM is the only per-use API and ingestion doesn't depend on another service.
+- Streaming uses fetch instead of EventSource, because EventSource can't send an Authorization header. The frontend parses the SSE frames itself.
+- Refresh tokens rotate on every use and are stored server-side. If an already-rotated token is used again, I treat it as stolen and revoke all of that user's sessions.
+- Tokens are in localStorage. XSS can read them, which httpOnly cookies would prevent, but cookies would mean CSRF handling across two domains. Access tokens last 15 minutes and refresh tokens can be revoked.
+- A demo LLM provider streams a canned answer through the real retrieval path, so local dev and CI need no API key.
+- All users share one Chroma collection. Every chunk carries a user_id, and every query and delete filters on it.
 
-**RAG flow**: question → embed → top-k similarity search (scoped to your account) → excerpts injected into a grounded system prompt → the LLM streams an answer citing `[1]`, `[2]`… → both turns persisted with sources.
+## What broke
 
-## Tech stack
+Sept 29: nobody could register or log in. The frontend had moved to docmaid-ai.vercel.app, but `CORS_ORIGINS` on Render still listed the old domain, so the browser blocked every API call. I added the new domain to the variable in the Render dashboard, then to `render.yaml` as well, so a Blueprint sync can't bring the old value back.
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 18, TypeScript, Vite, TailwindCSS, Zustand, Recharts |
-| Backend | FastAPI, SQLAlchemy 2.0, Pydantic v2 |
-| LLM | Pluggable: demo (offline) / Groq — all streaming |
-| Vector store | ChromaDB (local embeddings — no embedding API cost) |
-| Database | PostgreSQL 16 |
-| Auth | PyJWT (access + rotating refresh tokens) + bcrypt |
-| Rate limiting | slowapi (per-user keys) |
-| Migrations | Alembic |
-| Infra | Docker, Docker Compose, nginx, GitHub Actions |
+Sept 29: a rebuild pulled SQLAlchemy 2.1, which made psycopg 3 the default driver for `postgresql://` URLs. Only psycopg2 was installed, so the backend crashed on boot. I changed `DATABASE_URL` to start with `postgresql+psycopg2://`. The underlying problem is that dependencies aren't pinned yet.
 
-## Quickstart
+Sept 30: every chat request failed with a 404 from Groq. The default model, `llama-3.3-70b-versatile`, had been retired for free accounts on Aug 16. I set `GROQ_MODEL` to a current model on Render. The code still has one hardcoded default and no fallback.
 
-### Docker (recommended)
+## Limitations
+
+- Citations point at chunks, not pages.
+- A PDF with no text layer fails with "No extractable text found". One that's mostly scanned pages gets indexed with whatever text it has, so questions about the scanned parts find nothing. There's no OCR.
+- Indexing runs in the web process. If the server restarts mid-upload, the job is lost and the document is marked failed.
+- The embedding model (about 79 MB) downloads on every cold start, so the first upload or question after a deploy takes 15 to 20 seconds longer.
+- I haven't measured retrieval quality yet.
+- Rate limits are in memory, which only works with one process.
+- Stripe billing is in the code but not configured in production.
+
+## Run it locally
 
 ```bash
-docker compose up --build   # no .env needed — runs in free demo mode
+docker compose up --build
 ```
 
-- App: http://localhost:3000
-- API docs (Swagger): http://localhost:8000/docs
+The app is at http://localhost:3000 and the API docs at http://localhost:8000/docs. It uses the demo provider, so no keys are needed. For real answers, copy `.env.example` to `.env` and set `LLM_PROVIDER=groq` and `GROQ_API_KEY` (free at https://console.groq.com).
 
-Want real model answers? Copy `.env.example` → `.env` and set:
-
-- `LLM_PROVIDER=groq` + `GROQ_API_KEY` — free tier at [console.groq.com](https://console.groq.com), no payment method required
-
-### Manual (dev)
+Backend tests run against SQLite, so they need no database or keys:
 
 ```bash
-# Backend
 cd backend
-python -m venv .venv && source .venv/bin/activate   # .venv\Scripts\activate on Windows
 pip install -r requirements-dev.txt
-export DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/docmaid
-alembic upgrade head                                  # create/upgrade the schema
-uvicorn app.main:app --reload                         # demo mode by default
+python -m pytest
+ruff check app tests
+```
 
-# Frontend (new terminal)
+Frontend typecheck and build:
+
+```bash
 cd frontend
-npm install
-npm run dev                                           # http://localhost:5173
+npm ci
+npm run build
 ```
 
-### Tests & lint
-
-```bash
-cd backend
-pytest                      # runs against SQLite — no services or API keys needed
-ruff check app tests        # lint (same check CI runs)
-
-cd ../frontend
-npm run build               # strict TypeScript typecheck + production build
-```
-
-## Environment variables
-
-| Variable | Required | Default | Purpose |
-|---|---|---|---|
-| `LLM_PROVIDER` | no | `demo` | `demo` (offline, free) or `groq` |
-| `GROQ_API_KEY` | if `groq` | — | Free at console.groq.com — no payment method needed |
-| `SECRET_KEY` | ✅ in prod | dev placeholder | JWT signing key — generate with `python -c "import secrets; print(secrets.token_hex(32))"`. The app **refuses to start** in production with the dev default. |
-| `ENVIRONMENT` | no | `development` | Set `production` to enforce the SECRET_KEY check |
-| `DATABASE_URL` | no | local Postgres | SQLAlchemy URL |
-| `POSTGRES_PASSWORD` | ✅ in prod | `postgres` | Database password (docker-compose) |
-| `DOMAIN` | prod only | — | Your domain for automatic HTTPS (`docker-compose.prod.yml`) |
-| `GROQ_MODEL` | no | Llama 3.3 70B | Model used by Groq |
-| `CHUNK_SIZE` / `CHUNK_OVERLAP` / `RAG_TOP_K` | no | 1000 / 200 / 5 | RAG tuning knobs |
-
-Copy `.env.example` → `.env` and fill in real values. `.env` files are git-ignored and must never be committed.
-
-## API overview
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/auth/register` | Create account, returns access + refresh tokens |
-| POST | `/api/auth/login` | Sign in, returns access + refresh tokens |
-| POST | `/api/auth/refresh` | Rotate a refresh token for a new pair |
-| POST | `/api/auth/logout` | Revoke a refresh token server-side |
-| GET | `/api/auth/me` | Current user |
-| POST | `/api/documents/upload` | Upload file; indexing runs in background |
-| GET | `/api/documents` | List documents with processing status |
-| DELETE | `/api/documents/{id}` | Delete document + its vectors |
-| POST | `/api/conversations` | Start a conversation (one doc or all) |
-| POST | `/api/conversations/{id}/messages` | Ask a question — streams SSE answer |
-| GET | `/api/conversations/{id}/messages` | Conversation history with citations |
-| GET | `/api/analytics/overview` | Workspace stats |
-| GET | `/api/analytics/activity` | Daily uploads/questions for charting |
-
-## Key engineering decisions
-
-- **Streaming over SSE from a POST fetch** — `EventSource` can't send Authorization headers, so the client parses SSE frames from a streamed `fetch` body. nginx is configured with `proxy_buffering off` so tokens render as they're generated.
-- **Background processing with isolated sessions** — document indexing runs in FastAPI BackgroundTasks with a dedicated DB session and never throws; failures land in the document row (`status=failed`, `error_message`) where the UI surfaces them.
-- **Multi-tenant vector search** — one Chroma collection, every chunk tagged with `user_id`, every query filtered by it. Users can never retrieve each other's content.
-- **Local embeddings** — ChromaDB's built-in model keeps the only paid API the LLM itself, and removes a network hop from ingestion.
-- **Grounded prompting** — the system prompt instructs the model to answer *only* from retrieved excerpts, cite them by number, and explicitly say when the documents don't contain the answer (anti-hallucination).
-- **Demo provider as a first-class backend** — the `demo` LLM runs the entire pipeline (embed → retrieve → rank → cite → stream) and only substitutes the final generation step, so the app is fully demonstrable at zero cost and CI never needs a secret.
-
-## Security considerations
-
-Security posture and the reasoning behind it — including known, accepted tradeoffs:
-
-**Authentication.** Access tokens are JWTs that live 15 minutes; sessions persist via refresh tokens that rotate on every use and are recorded server-side, so logout actually revokes them and a replayed (stolen-then-rotated) refresh token nukes every session for that user. The signing algorithm is pinned on decode (no algorithm-confusion), and a `type` claim stops refresh tokens being replayed as access tokens. Passwords are bcrypt-hashed and capped at 72 bytes because bcrypt silently ignores anything longer.
-
-**Tokens in localStorage — accepted tradeoff.** Tokens are readable by successful XSS, whereas `httpOnly` cookies wouldn't be. The mitigations: React escapes rendered content by default, no `dangerouslySetInnerHTML` is used, access tokens expire in 15 minutes, and refresh tokens are revocable. Cookies would trade the XSS exposure for CSRF handling plus cross-origin complexity; for this architecture the short-token + revocation design was the deliberate choice.
-
-**Rate limiting.** slowapi enforces per-user limits (falling back to per-IP when anonymous): login 10/min, register 10/hr, upload 30/hr, and chat 20/min + 200/day. Chat is the tightest because each call can trigger a paid LLM request — the daily cap bounds the worst-case API spend from any single account. Limits are in-memory (correct for the single-process deployment); a Redis backend is the documented path if the API ever scales out.
-
-**Prompt injection — known and mitigated, not eliminated.** Uploaded documents are untrusted input that ends up inside the LLM prompt, so a document containing "ignore previous instructions…" can try to steer the model. Blast radius is inherently small: the model has no tools, and retrieval is scoped to the uploader's own account, so an attacker can only poison their own answers. Excerpts are additionally wrapped in `<document_excerpts>` delimiters with an explicit system rule that delimited content is data, not instructions. This raises the bar; no prompt-level defense is airtight, which is why the model has no capabilities worth hijacking.
-
-**Uploads.** Files are validated by extension *and* magic bytes (a renamed `.exe` is rejected before processing), size-capped, stored under server-generated UUID names so user-supplied filenames never touch the filesystem, and namespaced per user.
-
-**Tenant isolation.** Every document/conversation route checks ownership (returning 404, not 403, so IDs can't be enumerated), every vector-store query *and delete* filters on `user_id`, and all SQL goes through the SQLAlchemy ORM with bound parameters.
-
-**Error hygiene.** Raw exception strings from parsing libraries can leak internals (server paths, library versions); processing failures store a generic message in the API-visible field and keep the real traceback in server logs.
-
-**Secrets.** No secrets are committed. The dev `SECRET_KEY` fallback is public by design, and the app refuses to start in production (`ENVIRONMENT=production`) while it's in use; the prod compose file also hard-fails if `SECRET_KEY` is unset.
-
-## Production deployment
-
-A production compose file with automatic HTTPS is included — Caddy terminates TLS in front of the containers, and only ports 80/443 are exposed:
-
-```bash
-cp .env.example .env   # set DOMAIN, SECRET_KEY, POSTGRES_PASSWORD (+ LLM provider if desired)
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
-Database schema is managed by Alembic — the backend container runs `alembic upgrade head` on start, so migrations apply automatically on deploy.
-
-See **[DEPLOYMENT.md](DEPLOYMENT.md)** for the full VPS guide (DNS, backups, updates, security checklist) and managed-platform alternatives (Railway/Render/Fly.io).
-
-## Screenshots
-
-<!-- TODO: add screenshots/GIFs after first run:
-  docs/screenshots/dashboard.png   — document list with processing status
-  docs/screenshots/chat.png        — streaming answer with citations expanded
-  docs/screenshots/analytics.png   — stats + activity chart
--->
-
-| Dashboard | Chat with citations | Analytics |
-|---|---|---|
-| _coming soon_ | _coming soon_ | _coming soon_ |
-
-## What this project demonstrates
-
-Skills exercised end-to-end in this codebase (resume-ready bullets):
-
-- Built a **full-stack RAG application** (React/TypeScript + FastAPI/PostgreSQL) that lets users chat with uploaded documents, with answers streamed token-by-token and grounded in cited source passages
-- Designed an **asynchronous document-ingestion pipeline** (extract → chunk → embed → index) with status tracking, error recovery, and a multi-tenant ChromaDB vector store filtered per user
-- Built a **pluggable LLM provider layer** (offline demo / Groq) with streaming Server-Sent Events, prompt engineering for citation-grounded answers, and graceful degradation on failures
-- Implemented **JWT auth with rotating refresh tokens and server-side revocation**, per-user rate limiting, ownership-checked REST APIs, and an append-only analytics event log powering a usage dashboard
-- Wrote up a **threat model and security tradeoffs** (prompt injection, token storage, abuse limits) and enforced them in code — startup guards, magic-byte validation, tenant-scoped vector search
-- Shipped with **Docker Compose** (dev + production-with-HTTPS variants), **GitHub Actions CI** (lint, tests, typecheck, image builds), and a documented VPS deployment path
-
-## Roadmap
-
-- [x] Alembic migrations (replaced `create_all`)
-- [x] Rate limiting & request quotas
-- [x] Refresh tokens with rotation and server-side revocation
-- [ ] Celery + Redis for horizontally scalable ingestion
-- [ ] Hybrid retrieval (BM25 + vectors) and reranking
-- [ ] Document page-level citations with PDF preview
+Deployment is in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## License
 
-MIT
+MIT, see [LICENSE](LICENSE).

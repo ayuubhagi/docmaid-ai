@@ -66,7 +66,7 @@ def activity(
         .group_by(day_expr, AnalyticsEvent.event_type)
     ).all()
 
-    # func.date returns a date on Postgres and a string on SQLite — normalise to ISO strings.
+    # func.date returns a date on Postgres and a string on SQLite, so normalise to ISO strings.
     counts: dict[str, dict[str, int]] = {}
     for day, event_type, count in rows:
         key = day.isoformat() if isinstance(day, date) else str(day)

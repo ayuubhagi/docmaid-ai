@@ -9,13 +9,6 @@
 
   body {
     @apply bg-slate-950 font-sans text-slate-100 antialiased;
-    /* Faint warm glow anchored top-center — barely-there depth, not a gradient wash. */
-    background-image: radial-gradient(
-      70rem 40rem at 50% -8rem,
-      rgba(245, 158, 11, 0.06),
-      transparent 60%
-    );
-    background-attachment: fixed;
   }
 
   ::selection {
@@ -28,7 +21,7 @@
     letter-spacing: -0.015em;
   }
 
-  /* Quiet, slim scrollbars that match the palette. */
+  /* Slim scrollbars in the slate palette. */
   * {
     scrollbar-width: thin;
     scrollbar-color: #334155 transparent;
@@ -47,7 +40,7 @@
     background-color: #334155;
   }
 
-  /* One consistent, accessible focus ring across the whole app. */
+  /* Same visible focus ring on every interactive element, for keyboard users. */
   :focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px #020617, 0 0 0 4px rgba(245, 158, 11, 0.7);
@@ -57,7 +50,7 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 font-medium text-slate-950 shadow-sm transition-all duration-150 hover:bg-brand-400 hover:shadow-glow active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-sm;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2 font-medium text-slate-950 shadow-sm transition-all duration-150 hover:bg-brand-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 px-4 py-2 font-medium text-slate-200 transition-all duration-150 hover:border-slate-500 hover:bg-slate-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
@@ -75,11 +68,6 @@
 }
 
 @layer utilities {
-  /* Staggered entrances: add .stagger to a parent, .animate-fade-up to children. */
-  .stagger > * {
-    animation-delay: calc(var(--i, 0) * 80ms);
-  }
-
   /* Skeleton shimmer for loading states. */
   .skeleton {
     @apply relative overflow-hidden rounded-md bg-slate-800/70;
@@ -97,7 +85,7 @@
   }
 }
 
-/* Respect people who prefer less motion — turn everything calm. */
+/* Turn off animations for users who set prefers-reduced-motion. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
