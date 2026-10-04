@@ -4,7 +4,9 @@ Upload a document, ask questions about it, and get answers that cite the passage
 
 Live at https://docmaid-ai.vercel.app. You can ask the sample lease questions without signing up. The backend is on Render's free tier, so the first request after 15 idle minutes takes about a minute.
 
-## Background
+## Why I built it
+
+I wanted to drop in a PDF, ask questions about it, and get answers I could check against the document. ChatGPT and similar tools would often answer confidently and be wrong, with no easy way to see where an answer came from. So every answer here shows the passages it was based on.
 
 I built the first version in June 2026. It went live, 33 people signed up, and it broke three times in one week in late September. Those incidents are below, along with what I changed.
 
