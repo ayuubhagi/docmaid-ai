@@ -68,11 +68,6 @@
 }
 
 @layer utilities {
-  /* Staggered entrances: add .stagger to a parent, .animate-fade-up to children. */
-  .stagger > * {
-    animation-delay: calc(var(--i, 0) * 80ms);
-  }
-
   /* Skeleton shimmer for loading states. */
   .skeleton {
     @apply relative overflow-hidden rounded-md bg-slate-800/70;
