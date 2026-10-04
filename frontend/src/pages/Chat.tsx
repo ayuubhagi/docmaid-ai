@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
+import Markdown from "../components/Markdown";
 import UpgradeCard from "../components/UpgradeCard";
 import { getConversation, listMessages, streamMessage, UpgradeRequiredError } from "../services/api";
 import type { Conversation, Source } from "../types";
@@ -166,12 +167,14 @@ export default function Chat() {
                     : "border border-slate-800 bg-slate-900 text-slate-200"
                 }`}
               >
-                <p className="whitespace-pre-wrap">
-                  {m.content}
-                  {m.streaming && (
-                    <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-blink bg-brand-400 align-middle" />
-                  )}
-                </p>
+                {m.role === "assistant" ? (
+                  <Markdown>{m.content}</Markdown>
+                ) : (
+                  <p className="whitespace-pre-wrap">{m.content}</p>
+                )}
+                {m.streaming && (
+                  <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-blink bg-brand-400 align-middle" />
+                )}
                 {m.role === "assistant" && m.sources && <SourceList sources={m.sources} />}
               </div>
             </div>

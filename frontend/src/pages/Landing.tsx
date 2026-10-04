@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+import Markdown from "../components/Markdown";
 import { fetchSampleInfo, getToken, streamSampleMessage } from "../services/api";
 import type { Source } from "../types";
 
@@ -96,12 +97,10 @@ function TrySample() {
 
       {asked && (
         <div className="mt-5 rounded-lg border border-slate-800 bg-slate-950/60 p-4 text-sm leading-relaxed text-slate-200">
-          <p className="whitespace-pre-wrap">
-            {answer}
-            {busy && (
-              <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-blink bg-brand-400 align-middle" />
-            )}
-          </p>
+          <Markdown>{answer}</Markdown>
+          {busy && (
+            <span className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-blink bg-brand-400 align-middle" />
+          )}
           {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
         </div>
       )}
