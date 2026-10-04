@@ -28,7 +28,7 @@ React, TypeScript, Vite and Tailwind on Vercel. FastAPI, SQLAlchemy and Alembic 
 
 ## What broke
 
-Sept 29: nobody could register or log in. The frontend had moved to docmaid-ai.vercel.app, but `CORS_ORIGINS` on Render still listed the old domain, so the browser blocked every API call. I updated the variable in the Render dashboard. `render.yaml` still has the old value and needs fixing so a Blueprint sync can't bring it back.
+Sept 29: nobody could register or log in. The frontend had moved to docmaid-ai.vercel.app, but `CORS_ORIGINS` on Render still listed the old domain, so the browser blocked every API call. I added the new domain to the variable in the Render dashboard, then to `render.yaml` as well, so a Blueprint sync can't bring the old value back.
 
 Sept 29: a rebuild pulled SQLAlchemy 2.1, which made psycopg 3 the default driver for `postgresql://` URLs. Only psycopg2 was installed, so the backend crashed on boot. I changed `DATABASE_URL` to start with `postgresql+psycopg2://`. The underlying problem is that dependencies aren't pinned yet.
 
