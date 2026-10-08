@@ -23,6 +23,9 @@ const components: Components = {
   ),
 };
 
+// gpt-oss models sometimes cite in their own format, like 【1†L3-L4】, even when asked for [1].
+const toBracketCitations = (text: string) => text.replace(/【(\d+)(?:†[^】]*)?】/g, "[$1]");
+
 export default function Markdown({ children }: { children: string }) {
-  return <ReactMarkdown components={components}>{children}</ReactMarkdown>;
+  return <ReactMarkdown components={components}>{toBracketCitations(children)}</ReactMarkdown>;
 }
