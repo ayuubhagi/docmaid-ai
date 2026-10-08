@@ -7,6 +7,10 @@ import type { Source } from "../types";
 
 const REPO_URL = "https://github.com/ayuubhagi/docmaid-ai";
 
+// A Render free instance can take over a minute to boot, and may answer 502 while it does.
+const SAMPLE_RETRY_MS = 5_000;
+const SAMPLE_GIVE_UP_MS = 180_000;
+
 type SampleState =
   | { status: "loading" }
   | { status: "failed" }
@@ -14,6 +18,8 @@ type SampleState =
 
 function TrySample() {
   const [sample, setSample] = useState<SampleState>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
+  const [waited, setWaited] = useState(0);
   const [asked, setAsked] = useState<string | null>(null);
   const [answer, setAnswer] = useState("");
   const [sources, setSources] = useState<Source[]>([]);
@@ -22,12 +28,37 @@ function TrySample() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSampleInfo()
-      .then((info) =>
-        setSample({ status: "ready", filename: info.filename, questions: info.suggested_questions }),
-      )
-      .catch(() => setSample({ status: "failed" }));
-  }, []);
+    let cancelled = false;
+    const started = Date.now();
+    setSample({ status: "loading" });
+    setWaited(0);
+    const clock = setInterval(() => setWaited(Math.round((Date.now() - started) / 1000)), 1000);
+
+    const load = async () => {
+      while (!cancelled && Date.now() - started < SAMPLE_GIVE_UP_MS) {
+        try {
+          const info = await fetchSampleInfo();
+          if (!cancelled) {
+            setSample({
+              status: "ready",
+              filename: info.filename,
+              questions: info.suggested_questions,
+            });
+          }
+          return;
+        } catch {
+          await new Promise((resolve) => setTimeout(resolve, SAMPLE_RETRY_MS));
+        }
+      }
+      if (!cancelled) setSample({ status: "failed" });
+    };
+    void load().finally(() => clearInterval(clock));
+
+    return () => {
+      cancelled = true;
+      clearInterval(clock);
+    };
+  }, [attempt]);
 
   const ask = async (question: string) => {
     if (busy) return;
@@ -53,10 +84,11 @@ function TrySample() {
   };
 
   if (sample.status === "loading") {
-    // The free Render instance sleeps when idle, so the first request can take a while.
     return (
       <p className="text-sm text-slate-500">
-        Waking up the server. On the free tier this can take up to a minute.
+        {waited < 3
+          ? "Loading the sample..."
+          : `Waking up the server (${waited}s). It sleeps when idle on the free tier, so this can take a minute or two.`}
       </p>
     );
   }
@@ -64,11 +96,15 @@ function TrySample() {
   if (sample.status === "failed") {
     return (
       <p className="text-sm text-slate-400">
-        The sample isn't available right now.{" "}
+        The server didn't wake up.{" "}
+        <button className="text-brand-400 hover:underline" onClick={() => setAttempt((n) => n + 1)}>
+          Try again
+        </button>{" "}
+        or{" "}
         <Link to="/register" className="text-brand-400 hover:underline">
-          Create an account
-        </Link>{" "}
-        to try it on your own document.
+          create an account
+        </Link>
+        .
       </p>
     );
   }
