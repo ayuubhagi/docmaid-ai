@@ -153,7 +153,9 @@ export const openBillingPortal = async (): Promise<void> => {
 };
 
 // ---- Sample document (anonymous, pre-signup) ----
-export const fetchSampleInfo = () => api.get<SampleInfo>("/sample").then((r) => r.data);
+// Bounded so the landing page can retry instead of hanging on one stuck cold-start request.
+export const fetchSampleInfo = () =>
+  api.get<SampleInfo>("/sample", { timeout: 60_000 }).then((r) => r.data);
 
 // ---- Analytics ----
 export const fetchOverview = () =>
